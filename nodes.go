@@ -7,15 +7,30 @@ import (
 	"log"
 	"math"
 	"os"
+
+	"github.com/RulezKT/findf"
 )
 
 const RAD_TO_DEG = 5.7295779513082320877e1
 
-func LoadNodes(path string) ([]int64, []float64) {
+const SEC_FILE = "nodes.sec"
+const LNG_FILE = "nodes.lng"
+
+type Nodes struct {
+	SecArr []int64
+	LngArr []float64
+	North  float64
+	South  float64
+}
+
+func Load(folder string) ([]int64, []float64) {
 
 	const FILE_LENGTH = 5397
 
-	f, err := os.ReadFile("../files/nodes.sec")
+	dir := findf.Dir(folder)
+	secFile := findf.File(dir, SEC_FILE)
+
+	f, err := os.ReadFile(secFile)
 	if err != nil {
 		log.Fatal(err)
 		return nil, nil
@@ -29,7 +44,9 @@ func LoadNodes(path string) ([]int64, []float64) {
 		fmt.Println("binary.Read failed:", err)
 	}
 
-	f, err = os.ReadFile("../files/nodes.lng")
+	lngFile := findf.File(dir, LNG_FILE)
+
+	f, err = os.ReadFile(lngFile)
 	if err != nil {
 		log.Fatal(err)
 		return nil, nil
@@ -73,8 +90,15 @@ func LoadNodes(path string) ([]int64, []float64) {
 	// 	fmt.Println("binary.Write failed:", err)
 	// }
 
+	// for i, v := range lngArr {
+	// 	lngArr[i] = v * RAD_TO_DEG
+	// 	if lngArr[i] > 360 {
+	// 		lngArr[i] -= 360
+	// 	}
+	// }
+
 	// // write to file
-	// file, err = os.Create("../files/nodes.lng")
+	// file, err := os.Create("../files/nodesDEG.lng")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
@@ -91,7 +115,7 @@ func LoadNodes(path string) ([]int64, []float64) {
 // считаем Лунные Узлы методом интерполяции
 // V4 2024
 // return in degrees
-func Nodes(dateInSeconds int64, nodesSec []int64, nodesLng []float64) (float64, float64) {
+func (n Nodes) Calc(dateInSeconds int64, nodesSec []int64, nodesLng []float64) (float64, float64) {
 
 	var start_i int
 
@@ -117,8 +141,12 @@ func Nodes(dateInSeconds int64, nodesSec []int64, nodesLng []float64) (float64, 
 	// Для этого берем позицию противоположного узла  через пол-месяца 27.2122/2 = 13.6061 дня.
 	// и добавляем PI, так как узлы всегда находятся точно друг напротив друга
 	node_clean_polar_end := nodesLng[start_i+1]
+	// fmt.Println("node_clean_polar_end = ", node_clean_polar_end)
 	node_clean_polar_end += 180
+	// fmt.Println("node_clean_polar_end = ", node_clean_polar_end)
 	node_clean_polar_end = Convert_to_0_360_DEG(node_clean_polar_end)
+
+	// fmt.Println("node_clean_polar_end = ", node_clean_polar_end)
 
 	abs_diff := math.Abs(node_clean_polar_end - node_clean_polar_start)
 	if (abs_diff) > 180+90 {
@@ -164,7 +192,8 @@ func Nodes(dateInSeconds int64, nodesSec []int64, nodesLng []float64) (float64, 
 // все в Градусах
 func Convert_to_0_360_DEG(longitude float64) float64 {
 
-	coeff := math.Abs(longitude / 360)
+	coeff := int(math.Abs(longitude / 360))
+	// fmt.Printf("coeff = %f\n", coeff)
 
 	if longitude < 0 {
 		return longitude + float64(coeff*360+360)
