@@ -10,8 +10,7 @@ func main() {
 
 	nodes := nodes.Nodes{}
 	nodes.Load("files")
-	// fmt.Println("sec = ", nodes.SecArr)
-	// fmt.Println("lng = ", nodes.LngArr)
+
 	nodes.Calc(-682470731)
 	fmt.Println(nodes.North, nodes.South)
 

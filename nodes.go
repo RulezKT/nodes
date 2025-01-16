@@ -17,8 +17,8 @@ const SEC_FILE = "nodes.sec"
 const LNG_FILE = "nodes.lng"
 
 type Nodes struct {
-	SecArr []int64
-	LngArr []float64
+	secArr []int64
+	lngArr []float64
 	North  float64
 	South  float64
 }
@@ -36,8 +36,8 @@ func (n *Nodes) Load(folder string) {
 	}
 
 	r := bytes.NewReader(f)
-	n.SecArr = make([]int64, FILE_LENGTH)
-	err = binary.Read(r, binary.LittleEndian, &n.SecArr)
+	n.secArr = make([]int64, FILE_LENGTH)
+	err = binary.Read(r, binary.LittleEndian, &n.secArr)
 	if err != nil {
 		fmt.Println("binary.Read failed:", err)
 	}
@@ -49,8 +49,8 @@ func (n *Nodes) Load(folder string) {
 	}
 
 	r = bytes.NewReader(f)
-	n.LngArr = make([]float64, FILE_LENGTH)
-	err = binary.Read(r, binary.LittleEndian, &n.LngArr)
+	n.lngArr = make([]float64, FILE_LENGTH)
+	err = binary.Read(r, binary.LittleEndian, &n.lngArr)
 	if err != nil {
 		fmt.Println("binary.Read failed:", err)
 	}
@@ -62,66 +62,66 @@ func (n *Nodes) Load(folder string) {
 // return in degrees
 func (n *Nodes) Calc(dateInSeconds int64) {
 
-	var start_i int
-	var node_to_find float64
+	var startIndex int
+	var nodeToFind float64
 
-	for i, v := range n.SecArr {
+	for i, v := range n.secArr {
 		if v > dateInSeconds {
 			// fmt.Println("index =", i-1, "value = ", v)
-			start_i = i - 1
+			startIndex = i - 1
 			break
 		}
 	}
 
-	start_second := n.SecArr[start_i]
-	end_second := n.SecArr[start_i+1]
+	startSecond := n.secArr[startIndex]
+	endSecond := n.secArr[startIndex+1]
 
 	// находим начальную точку Узла, который считаем
-	node_clean_polar_start := n.LngArr[start_i]
+	startLng := n.lngArr[startIndex]
 
 	// находим финальную точку Узла, который считаем
 	// Для этого берем позицию противоположного узла  через пол-месяца 27.2122/2 = 13.6061 дня.
 	// и добавляем PI, так как узлы всегда находятся точно друг напротив друга
-	node_clean_polar_end := n.LngArr[start_i+1]
+	endLng := n.lngArr[startIndex+1]
 	// fmt.Println("node_clean_polar_end = ", node_clean_polar_end)
-	node_clean_polar_end += 180
+	endLng += 180
 	// fmt.Println("node_clean_polar_end = ", node_clean_polar_end)
-	if node_clean_polar_end > 360 {
-		node_clean_polar_end -= 360
+	if endLng > 360 {
+		endLng -= 360
 	}
 
 	// fmt.Println("node_clean_polar_end = ", node_clean_polar_end)
 
-	abs_diff := math.Abs(node_clean_polar_end - node_clean_polar_start)
-	if (abs_diff) > 180+90 {
-		if node_clean_polar_end > node_clean_polar_start {
-			abs_diff = 360 - node_clean_polar_end + node_clean_polar_start
+	absDiff := math.Abs(endLng - startLng)
+	if (absDiff) > 180+90 {
+		if endLng > startLng {
+			absDiff = 360 - endLng + startLng
 		} else {
-			abs_diff = 360 - node_clean_polar_start + node_clean_polar_end
+			absDiff = 360 - startLng + endLng
 		}
 	}
 	// находим скорость передвижения узла за 1 секунду
 	// для этого находим сколько прошел узел градусов за время прохода луны от одного узла до другого
 	// примерно (27.2122/2 = 13.6061 дня.)
-	speed_of_node := abs_diff / math.Abs(float64(end_second-start_second))
+	nodeSpeed := absDiff / math.Abs(float64(endSecond-startSecond))
 
 	// Проверка к какому из узлов ближе искомый узел и отсчитываем от него
-	first_halve_sec := math.Abs(float64(dateInSeconds - start_second))
-	second_halve_sec := math.Abs(float64(end_second - dateInSeconds))
+	firstHalf := math.Abs(float64(dateInSeconds - startSecond))
+	secondHalf := math.Abs(float64(endSecond - dateInSeconds))
 	// считаем от 0 узла
-	if first_halve_sec <= second_halve_sec {
-		node_to_find = node_clean_polar_start - speed_of_node*first_halve_sec
+	if firstHalf <= secondHalf {
+		nodeToFind = startLng - nodeSpeed*firstHalf
 		// считаем от узла +1
 	} else {
-		node_to_find = node_clean_polar_end + speed_of_node*second_halve_sec
+		nodeToFind = endLng + nodeSpeed*secondHalf
 	}
 	// if x%2==0 if even then true else false
 	// all even  indexes are north  all odd are south
-	if start_i%2 == 0 {
-		n.North = node_to_find
+	if startIndex%2 == 0 {
+		n.North = nodeToFind
 		n.South = n.North + 180
 	} else {
-		n.South = node_to_find
+		n.South = nodeToFind
 		n.North = n.South + 180
 	}
 
