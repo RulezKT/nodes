@@ -8,15 +8,25 @@ import (
 
 func main() {
 
-	date_in_seconds := int64(-682470731)
+	nodes := nodes.Nodes{}
+	nodes.Load("files")
+	// fmt.Println("sec = ", nodes.SecArr)
+	// fmt.Println("lng = ", nodes.LngArr)
+	nodes.Calc(-682470731)
+	fmt.Println(nodes.North, nodes.South)
 
-	nodesSec, nodesLng := nodes.Load("files")
+	nodes.Calc(682470731)
+	fmt.Println(nodes.North, nodes.South)
 
-	// fmt.Println(nodesSec)
-	// fmt.Println(nodesLng)
+	// date_in_seconds := int64(-682470731)
 
-	nNode, sNode := nodes.Nodes(date_in_seconds, nodesSec, nodesLng)
+	// nodesSec, nodesLng := nodes.Load("files")
 
-	fmt.Println(nNode, sNode)
+	// // fmt.Println(nodesSec)
+	// // fmt.Println(nodesLng)
+
+	// nNode, sNode := nodes.Nodes(date_in_seconds, nodesSec, nodesLng)
+
+	// fmt.Println(nNode, sNode)
 
 }

@@ -23,7 +23,7 @@ type Nodes struct {
 	South  float64
 }
 
-func Load(folder string) ([]int64, []float64) {
+func (n *Nodes) Load(folder string) {
 
 	const FILE_LENGTH = 5397
 
@@ -33,7 +33,6 @@ func Load(folder string) ([]int64, []float64) {
 	f, err := os.ReadFile(secFile)
 	if err != nil {
 		log.Fatal(err)
-		return nil, nil
 	}
 
 	r := bytes.NewReader(f)
@@ -49,7 +48,6 @@ func Load(folder string) ([]int64, []float64) {
 	f, err = os.ReadFile(lngFile)
 	if err != nil {
 		log.Fatal(err)
-		return nil, nil
 	}
 
 	r = bytes.NewReader(f)
@@ -109,19 +107,23 @@ func Load(folder string) ([]int64, []float64) {
 	// 	fmt.Println("binary.Write failed:", err)
 	// }
 
-	return secArr, lngArr
+	n.SecArr = secArr
+	n.LngArr = lngArr
+
+	// fmt.Println("sec = ", n.SecArr)
+	// fmt.Println("lng = ", n.LngArr)
 }
 
 // считаем Лунные Узлы методом интерполяции
 // V4 2024
 // return in degrees
-func (n Nodes) Calc(dateInSeconds int64, nodesSec []int64, nodesLng []float64) (float64, float64) {
+func (n *Nodes) Calc(dateInSeconds int64) {
 
 	var start_i int
 
-	for i, v := range nodesSec {
+	for i, v := range n.SecArr {
 		if v > dateInSeconds {
-			// fmt.Println("index =", i-1, "value = ", arr[i-1])
+			// fmt.Println("index =", i-1, "value = ", v)
 			start_i = i - 1
 			break
 		}
@@ -131,16 +133,16 @@ func (n Nodes) Calc(dateInSeconds int64, nodesSec []int64, nodesLng []float64) (
 	var south_node float64
 	var node_to_find float64
 
-	start_second := nodesSec[start_i]
-	end_second := nodesSec[start_i+1]
+	start_second := n.SecArr[start_i]
+	end_second := n.SecArr[start_i+1]
 
 	// находим начальную точку Узла, который считаем
-	node_clean_polar_start := nodesLng[start_i]
+	node_clean_polar_start := n.LngArr[start_i]
 
 	// находим финальную точку Узла, который считаем
 	// Для этого берем позицию противоположного узла  через пол-месяца 27.2122/2 = 13.6061 дня.
 	// и добавляем PI, так как узлы всегда находятся точно друг напротив друга
-	node_clean_polar_end := nodesLng[start_i+1]
+	node_clean_polar_end := n.LngArr[start_i+1]
 	// fmt.Println("node_clean_polar_end = ", node_clean_polar_end)
 	node_clean_polar_end += 180
 	// fmt.Println("node_clean_polar_end = ", node_clean_polar_end)
@@ -184,7 +186,8 @@ func (n Nodes) Calc(dateInSeconds int64, nodesSec []int64, nodesLng []float64) (
 	south_node = Convert_to_0_360_DEG(south_node)
 	north_node = Convert_to_0_360_DEG(north_node)
 
-	return north_node, south_node
+	n.North = north_node
+	n.South = south_node
 }
 
 // убирает минус или значения больше 360
