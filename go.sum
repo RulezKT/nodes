@@ -1,2 +1,6 @@
 github.com/RulezKT/findf v0.0.0-20250116185054-9814c25d923a h1:jQ5JDIykwckrYjoLsBddzpE5GJBfQP28QyXVugtq+C8=
 github.com/RulezKT/findf v0.0.0-20250116185054-9814c25d923a/go.mod h1:kwwdOxDGIxBZLjWHh//EZyK09C9cNOmJae9x+AJZ1v4=
+github.com/RulezKT/floatsfile v0.0.0-20250202191914-51af1fdd3adc h1:uP2Xwbevw15I/+cwALO9Xx2+XNyo0W0Q0bP5PcynXdM=
+github.com/RulezKT/floatsfile v0.0.0-20250202191914-51af1fdd3adc/go.mod h1:C1zrzN2Fce6jmDyr+ruiOb18r0vVEDSrWqAZWRE/jow=
+github.com/RulezKT/floatsfile v0.0.0-20250203004022-240a69a83023 h1:zGgFza+A9JTQvnRfM3wFlhVCkOWitoBZ1OgUoSpIoh4=
+github.com/RulezKT/floatsfile v0.0.0-20250203004022-240a69a83023/go.mod h1:C1zrzN2Fce6jmDyr+ruiOb18r0vVEDSrWqAZWRE/jow=

@@ -1,66 +1,34 @@
 package nodes
 
 import (
-	"bytes"
-	"encoding/binary"
-	"fmt"
-	"log"
 	"math"
-	"os"
+	"path/filepath"
 
-	"github.com/RulezKT/findf"
+	"github.com/RulezKT/floatsfile"
 )
 
 const RAD_TO_DEG = 5.7295779513082320877e1
 
 const SEC_FILE = "nodes.sec"
 const LNG_FILE = "nodes.lng"
+const FILE_LENGTH = 5397
 
 type Nodes struct {
 	secArr []int64
 	lngArr []float64
-	North  float64
-	South  float64
 }
 
-func (n *Nodes) Load(folder string) {
+func (n *Nodes) Load(dir string) {
 
-	const FILE_LENGTH = 5397
+	n.secArr = floatsfile.LoadIntBinary(filepath.Join(dir, SEC_FILE), FILE_LENGTH)
 
-	dir := findf.Dir(folder)
-
-	secFile := findf.File(dir, SEC_FILE)
-	f, err := os.ReadFile(secFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	r := bytes.NewReader(f)
-	n.secArr = make([]int64, FILE_LENGTH)
-	err = binary.Read(r, binary.LittleEndian, &n.secArr)
-	if err != nil {
-		fmt.Println("binary.Read failed:", err)
-	}
-
-	lngFile := findf.File(dir, LNG_FILE)
-	f, err = os.ReadFile(lngFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	r = bytes.NewReader(f)
-	n.lngArr = make([]float64, FILE_LENGTH)
-	err = binary.Read(r, binary.LittleEndian, &n.lngArr)
-	if err != nil {
-		fmt.Println("binary.Read failed:", err)
-	}
-
+	n.lngArr = floatsfile.LoadBinary(filepath.Join(dir, LNG_FILE), FILE_LENGTH)
 }
 
 // считаем Лунные Узлы методом интерполяции
 // V4 2024
 // return in degrees
-func (n *Nodes) Calc(dateInSeconds int64) {
+func (n *Nodes) Calc(dateInSeconds int64) (float64, float64) {
 
 	var startIndex int
 	var nodeToFind float64
@@ -115,22 +83,26 @@ func (n *Nodes) Calc(dateInSeconds int64) {
 	} else {
 		nodeToFind = endLng + nodeSpeed*secondHalf
 	}
+
+	var northn, southn float64
 	// if x%2==0 if even then true else false
 	// all even  indexes are north  all odd are south
 	if startIndex%2 == 0 {
-		n.North = nodeToFind
-		n.South = n.North + 180
+		northn = nodeToFind
+		southn = northn + 180
 	} else {
-		n.South = nodeToFind
-		n.North = n.South + 180
+		southn = nodeToFind
+		northn = southn + 180
 	}
 
-	if n.South > 360 {
-		n.South -= 360
+	if southn > 360 {
+		southn -= 360
 	}
 
-	if n.North > 360 {
-		n.North -= 360
+	if northn > 360 {
+		northn -= 360
 	}
+
+	return northn, southn
 
 }

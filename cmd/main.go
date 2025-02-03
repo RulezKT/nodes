@@ -11,11 +11,9 @@ func main() {
 	nodes := nodes.Nodes{}
 	nodes.Load("files")
 
-	nodes.Calc(-682470731)
-	fmt.Println(nodes.North, nodes.South)
+	fmt.Println(nodes.Calc(-682470731)) //185.01141648192737 5.011416481927357
 
-	nodes.Calc(682470731)
-	fmt.Println(nodes.North, nodes.South)
+	fmt.Println(nodes.Calc(682470731)) // 	67.2131172448477 247.21311724484767
 
 	// date_in_seconds := int64(-682470731)
 
