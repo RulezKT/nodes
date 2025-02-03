@@ -28,13 +28,13 @@ func (n *Nodes) Load(dir string) {
 // считаем Лунные Узлы методом интерполяции
 // V4 2024
 // return in degrees
-func (n *Nodes) Calc(dateInSeconds int64) (float64, float64) {
+func (n *Nodes) Calc(dateInSeconds float64) (float64, float64) {
 
 	var startIndex int
 	var nodeToFind float64
 
 	for i, v := range n.secArr {
-		if v > dateInSeconds {
+		if v > int64(dateInSeconds) {
 			// fmt.Println("index =", i-1, "value = ", v)
 			startIndex = i - 1
 			break
@@ -74,8 +74,8 @@ func (n *Nodes) Calc(dateInSeconds int64) (float64, float64) {
 	nodeSpeed := absDiff / math.Abs(float64(endSecond-startSecond))
 
 	// Проверка к какому из узлов ближе искомый узел и отсчитываем от него
-	firstHalf := math.Abs(float64(dateInSeconds - startSecond))
-	secondHalf := math.Abs(float64(endSecond - dateInSeconds))
+	firstHalf := math.Abs(dateInSeconds - float64(startSecond))
+	secondHalf := math.Abs(float64(endSecond) - dateInSeconds)
 	// считаем от 0 узла
 	if firstHalf <= secondHalf {
 		nodeToFind = startLng - nodeSpeed*firstHalf
